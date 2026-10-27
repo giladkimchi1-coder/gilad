@@ -1044,7 +1044,7 @@ ${S.budget.map(b => b.id + ' = ' + b.name).join('\n')}
 הזמנות רכש פתוחות:
 ${S.orders.filter(o => ['new', 'sent'].includes(o.status)).map(o => o.id + ' = ' + (o.items || '').replace(/\s+/g, ' ').slice(0, 120) + (o.supplier ? ' (ספק: ' + o.supplier + ')' : '')).join('\n') || 'אין'}`, { images: [file] });
       } catch (e) {
-        toast(e?.code === 'images_unavailable' || e?.code === 'bad_key' ? 'הקריאה האוטומטית עוד לא הוגדרה (חסר מפתח Anthropic), מלא ידנית' : e?.code === 'rate_limited' ? 'יותר מדי בקשות, נסה שוב בעוד דקה או מלא ידנית' : 'הקריאה האוטומטית נכשלה, מלא ידנית');
+        toast(e?.code === 'no_credit' ? 'אין קרדיט בחשבון Anthropic – הוסף קרדיט, ובינתיים מלא ידנית' : e?.code === 'images_unavailable' || e?.code === 'bad_key' ? 'הקריאה האוטומטית עוד לא הוגדרה (חסר מפתח Anthropic), מלא ידנית' : e?.code === 'rate_limited' ? 'יותר מדי בקשות, נסה שוב בעוד דקה או מלא ידנית' : 'הקריאה האוטומטית נכשלה, מלא ידנית');
         data = {};
       }
     }
@@ -1323,7 +1323,7 @@ ${S.orders.filter(o => ['new', 'sent'].includes(o.status)).map(o => o.id + ' = '
       d = await sample.json(`זו חשבונית חודשית של תאגיד כוח אדם (עובדים זרים) לפרויקט בנייה בישראל. החזר JSON בלבד:
 {"supplier": "שם התאגיד", "number": "מספר החשבונית", "date": "YYYY-MM-DD", "payrollMonth": "YYYY-MM (חודש העבודה שהחשבונית מחייבת)", "hours": מספר שעות או null, "rate": תעריף לשעה לפני מע"מ או null, "net": סכום לפני מע"מ או null, "total": סכום כולל מע"מ או null, "notes": "דבר חריג, או מחרוזת ריקה"}
 אל תנחש מספרים שלא מופיעים.`, { images: [file] }) || {};
-    } catch (e) { toast(e?.code === 'images_unavailable' || e?.code === 'bad_key' ? 'הקריאה האוטומטית עוד לא הוגדרה, מלא ידנית' : 'הקריאה האוטומטית נכשלה, מלא ידנית'); }
+    } catch (e) { toast(e?.code === 'no_credit' ? 'אין קרדיט בחשבון Anthropic, מלא ידנית' : e?.code === 'images_unavailable' || e?.code === 'bad_key' ? 'הקריאה האוטומטית עוד לא הוגדרה, מלא ידנית' : 'הקריאה האוטומטית נכשלה, מלא ידנית'); }
     const today = iso(new Date());
     const month = /^\d{4}-\d{2}$/.test(d.payrollMonth || '') ? d.payrollMonth : (d.date || today).slice(0, 7);
     const inp = (id, v, extra = {}) => el('input', { id: 'py_' + id, value: v ?? '', ...extra });

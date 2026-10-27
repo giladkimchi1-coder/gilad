@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ data: JSON.parse(json) });
   } catch (e) {
     if (e instanceof Anthropic.AuthenticationError) return NextResponse.json({ error: "bad_key" }, { status: 503 });
+    if (e instanceof Anthropic.BadRequestError && /credit balance/i.test(e.message)) return NextResponse.json({ error: "no_credit" }, { status: 402 });
     if (e instanceof Anthropic.RateLimitError) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
     if (e instanceof Anthropic.APIError) return NextResponse.json({ error: "api_error", status: e.status }, { status: 502 });
     if (e instanceof SyntaxError) return NextResponse.json({ error: "unreadable" }, { status: 422 });
