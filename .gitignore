@@ -43,3 +43,6 @@ next-env.d.ts
 # old-system export: private data (pay, workers) and files — loaded by scripts/import.ts, never pushed to GitHub
 /data/
 /assets/
+
+.vercel
+.env*

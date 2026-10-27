@@ -1,0 +1,6 @@
+# Never upload the old-system export (pay data, workers, photos) or local keys to the server.
+data/
+assets/
+.env*
+current-app.html
+*.tmp.ts
