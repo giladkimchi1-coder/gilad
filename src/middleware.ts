@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC = ["/login", "/auth/", "/manifest.webmanifest", "/sw.js", "/icon"];
+// local key setup page (the route itself refuses outside `npm run dev` on localhost)
+if (process.env.NODE_ENV === "development") PUBLIC.push("/setup/", "/api/setup/");
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: req });
