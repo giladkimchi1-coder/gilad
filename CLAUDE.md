@@ -95,6 +95,12 @@ User ids like `u_gfYCx9oPWdk1FONX2xpbkQ` are Gilad in the old system — map the
   with services injected from `src/legacy/services.ts`. Files: bucket `files`, key = asset id, served via `/blob/<id>`.
 - Login: magic link only (`shouldCreateUser: false`); Gilad's user exists (admin). New users get no role until set in `app.profiles`.
 - Local testing: `npx tsx scripts/test-login.ts <role>` prints a login URL for a temporary test user; `--delete` removes it.
+- Hosting: Vercel project `binenfeld-app` (Hobby for now; move to Pro before real company use) → https://binenfeld-app.vercel.app.
+  Deploy from this folder with `npx vercel@latest deploy --prod` (CLI is logged in; `.vercelignore` keeps data/, assets/, .env* off the server).
+  `npx tsx scripts/vercel-env.ts` copies the 4 runtime keys from `.env.local` to Vercel. Not connected to GitHub auto-deploy yet.
+- Supabase Auth URL config still needs: Site URL = the Vercel URL, redirect URLs `https://binenfeld-app.vercel.app/**` and `http://localhost:3000/**`
+  (needs Gilad's GitHub login to the Supabase dashboard). Until then magic links redirect to localhost.
+- Anthropic: org "Binenfeld", key `binenfeld-app` (never expires) is set; account has no credit yet (Gilad chose manual entry for now) → AI route returns `no_credit`.
 - Additions beyond the prototype: payroll invoice upload (workers tab), paste-import of orders from the WhatsApp group (orders tab),
   year sanity warning on scanned docs, share/mark-sent buttons in the outbox. WhatsApp texts contain no hours or ₪ amounts.
 
