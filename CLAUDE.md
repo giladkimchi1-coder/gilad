@@ -85,6 +85,19 @@ private/payroll/{pid}/{YYYY-MM}.json    monthly payroll invoice
 Fields like `image`, `asset`, `previews`, `photos` hold **asset ids**; the file is `assets/<id>.<ext>`.
 User ids like `u_gfYCx9oPWdk1FONX2xpbkQ` are Gilad in the old system — map them to his new Supabase user.
 
+## Implementation notes (what exists now)
+- Supabase project `djvppvnmqkdjkmbhmjej` (EU, Ireland). Keys + DB password + pooler host in `.env.local`.
+  `npm run db:migrate` applies `supabase/migrations/*.sql`; `npm run db:import` loads `data/` + `assets/` (adds missing only; `--overwrite` at cut-over).
+- Data model: one table `app.store(path, col, id, data jsonb)` mirroring the Firestore paths above. Not directly readable;
+  clients use RPCs `store_list/get/set/merge/add/delete/delete_project` which enforce roles (`app.profiles.role`) and strip
+  money fields from docs for foreman/procurement. Realtime: `public.store_ticks` (one row per collection) → client refetches.
+- UI: the prototype was ported as-is to `src/legacy/app.js` + `markup.ts` (same rules/functions, e.g. `computeSchedule`, `waLogText`),
+  with services injected from `src/legacy/services.ts`. Files: bucket `files`, key = asset id, served via `/blob/<id>`.
+- Login: magic link only (`shouldCreateUser: false`); Gilad's user exists (admin). New users get no role until set in `app.profiles`.
+- Local testing: `npx tsx scripts/test-login.ts <role>` prints a login URL for a temporary test user; `--delete` removes it.
+- Additions beyond the prototype: payroll invoice upload (workers tab), paste-import of orders from the WhatsApp group (orders tab),
+  year sanity warning on scanned docs, share/mark-sent buttons in the outbox. WhatsApp texts contain no hours or ₪ amounts.
+
 ## Build plan (do in order; show Gilad a working result after each phase)
 0. Check tools (Node LTS, Git); help install what's missing. Create the Next.js project, push to GitHub.
 1. Guide account setup: GitHub → Supabase (project in EU region) → Vercel (import the repo) → Anthropic Console (API key, set a monthly spend limit).
