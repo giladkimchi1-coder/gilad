@@ -8,7 +8,8 @@ for w in 700:NGSpv5_NC0k9P_v6ZUCbLRAHxK1Ebiuccg 800:NGSpv5_NC0k9P_v6ZUCbLRAHxK1E
   [ -f "heebo${w%%:*}.ttf" ] || curl -sS -o "heebo${w%%:*}.ttf" "https://fonts.gstatic.com/s/heebo/v28/${w#*:}.ttf"
 done
 python3 make_overlays.py "$D"
-rm -f seg_*.mp4 list.txt
+rm -f seg_*.mp4 list.txt durs.txt
+XF=0.4   # crossfade length between shots (s)
 
 # name start dur slow zoom ov
 SEGS="
@@ -27,8 +28,9 @@ while read -r name st du slow zoom ov; do
   [ -z "$name" ] && continue
   outdur=$(python3 -c "print(round($du*$slow,3))")
   pre="setpts=(PTS-STARTPTS)*$slow"
-  if [ "$slow" != "1" ]; then pre="$pre,minterpolate=fps=30:mi_mode=blend"; else pre="$pre,fps=30"; fi
+  if [ "$slow" != "1" ]; then pre="$pre,minterpolate=fps=30:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1"; else pre="$pre,fps=30"; fi
   if [ "$zoom" = "1" ]; then pre="$pre,crop=630:1120:225:800,scale=1080:1920:flags=lanczos"; fi
+  if [ "$name" = "intro" ]; then OVST=0.3; else OVST=$XF; fi
   if [ "$ov" = "intro" ]; then
     mask=intro_mask.png; ovp=intro_ov.png; blur="crop=1080:1830:0:0,pad=1080:1920:0:90,boxblur=3:1"
   else
@@ -40,13 +42,26 @@ while read -r name st du slow zoom ov; do
     [1:v]format=gray,scale=1080:1920[m];
     [bb][m]alphamerge[bm];
     [a][bm]overlay=shortest=1[c];
-    [2:v]format=rgba,fade=in:st=0.08:d=0.3:alpha=1[o];
-    [c][o]overlay=shortest=1,format=yuv420p[v]" \
+    [2:v]format=rgba,fade=in:st=$OVST:d=0.45:alpha=1[o];
+    [c][o]overlay=x=0:y='if(lt(t,$OVST),28,28*pow(1-min(1,(t-$OVST)/0.45),3))':eval=frame:shortest=1,format=yuv420p[v]" \
     -map "[v]" -t "$outdur" -r 30 -c:v libx264 -crf 17 -preset medium -pix_fmt yuv420p "seg_$name.mp4"
-  echo "file 'seg_$name.mp4'" >> list.txt
+  echo "seg_$name.mp4 $outdur" >> durs.txt
   echo "$name -> $outdur s"
 done <<< "$SEGS"
 
-ffmpeg -v error -y -f concat -safe 0 -i list.txt -f lavfi -i anullsrc=r=44100:cl=stereo \
-  -map 0:v -map 1:a -c:v copy -c:a aac -shortest -movflags +faststart "$OUT"
+# chain all shots with soft crossfades
+python3 - "$XF" > xf.txt <<'PY'
+import sys
+xf=float(sys.argv[1]); rows=[l.split() for l in open('durs.txt')]
+ins=' '.join(f'-i {f}' for f,_ in rows)
+parts=[]; acc=float(rows[0][1]); prev='[0:v]'
+for i,(f,d) in enumerate(rows[1:],1):
+    off=acc-xf; out=f'[x{i}]'
+    parts.append(f'{prev}[{i}:v]xfade=transition=fade:duration={xf}:offset={off:.3f}{out}')
+    acc=off+float(d); prev=out
+print(ins); print(';'.join(parts)+f';{prev}format=yuv420p[v]'); print(f'{acc:.3f}')
+PY
+INS=$(sed -n 1p xf.txt); FC=$(sed -n 2p xf.txt); TOT=$(sed -n 3p xf.txt)
+ffmpeg -nostdin -v error -y $INS -f lavfi -i anullsrc=r=44100:cl=stereo -filter_complex "$FC" \
+  -map "[v]" -map 10:a -t "$TOT" -c:v libx264 -crf 18 -preset medium -c:a aac -shortest -movflags +faststart "$OUT"
 ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT"
