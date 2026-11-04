@@ -50,9 +50,10 @@ def shadow_text(im, xy, text, font, fill, anchor='mm'):
     with_shadow(im, layer, 8, 170)
 
 
-def step(i, n, title, out):
+def step(i, n, title, out, logo_on=True):
     im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    place_logo(im, 1.0, 215)
+    if logo_on:
+        place_logo(im, 1.0, 215)
     pill(im, title, 1480)
     # progress dots
     r, gap = 9, 34
@@ -71,7 +72,8 @@ def intro(out, title, sub):
     shadow_text(im, (W / 2, 860), title, ImageFont.truetype(F8, 104), (255, 255, 255, 255))
     d = ImageDraw.Draw(im)
     d.rounded_rectangle((W / 2 - 70, 950, W / 2 + 70, 958), 4, fill=LIME)
-    shadow_text(im, (W / 2, 1030), sub, ImageFont.truetype(F7, 52), LIME)
+    if sub:
+        shadow_text(im, (W / 2, 1030), sub, ImageFont.truetype(F7, 52), LIME)
     im.save(out)
 
 
@@ -86,6 +88,7 @@ if __name__ == '__main__':
     steps = sys.argv[3].split('|')
     for i, t in enumerate(steps):
         step(i, len(steps), t, f'{D}/st{i}.png')
-    intro(f'{D}/intro.png', 'עדכון מהשטח', sys.argv[4])
+        step(i, len(steps), t, f'{D}/st{i}_nl.png', logo_on=False)
+    intro(f'{D}/intro.png', 'עדכון מהשטח', sys.argv[4] if len(sys.argv) > 4 else '')
     outro(f'{D}/outro.png', 'בונים שכבה אחרי שכבה.')
     print('ok')
