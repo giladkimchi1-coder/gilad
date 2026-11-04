@@ -1,0 +1,6 @@
+*.ttf
+*.png
+seg_*.mp4
+list.txt
+*.mp4
+!logo.png
