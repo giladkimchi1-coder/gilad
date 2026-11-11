@@ -43,18 +43,18 @@ for st in 3.6 6.0 8.36 10.7 13.02 15.38 17.72 20.06; do
 done
 ffmpeg -nostdin -v error -y -f concat -safe 0 -i mont.txt -c copy mont_all.mp4
 
-photo 01 photo4.jpg 2.8 h1.png 0.3 1
-photo 02 photo1.jpg 2.4 h2.png $XF -1
-SRC=(-i mont_all.mp4); PRE="fps=30"; finish 03 6.4 h3.png 0.25
+video 01 IMG_3955.mov 0.5 2.6 h9.png 0.3 wa
+photo 02 photo4.jpg 2.8 h1.png $XF 1
+photo 03 photo1.jpg 2.4 h2.png $XF -1
 video 04 "WhatsApp Video 2026-11-03 at 19.41.44.mp4" 2.5 2.0 h4.png $XF wa
 video 05 layers_orig.mov 3.3 1.8 h4.png 0 orig
 video 06 IMG_1121.MOV 5.5 2.6 h5.png $XF wa
-video 07 IMG_3955.mov 0.5 2.6 h9.png $XF wa
-video 08 layers_orig.mov 17.1 2.6 h6.png $XF orig
-video 09 IMG_1186.mov 0.5 2.4 h7.png $XF wa
-photo 10 photo2.jpg 2.0 h8.png $XF 1
-photo 11 photo3.jpg 1.8 h8.png 0 -1
-photo 12 photo5.jpg 2.0 h8.png 0 1
+video 07 layers_orig.mov 17.1 2.6 h6.png $XF orig
+video 08 IMG_1186.mov 0.5 2.4 h7.png $XF wa
+photo 09 photo2.jpg 2.0 h8.png $XF 1
+photo 10 photo3.jpg 1.8 h8.png 0 -1
+photo 11 photo5.jpg 2.0 h8.png 0 1
+SRC=(-i mont_all.mp4); PRE="fps=30"; finish 12 6.4 h3.png $XF
 photo 13 photo4.jpg 3.6 cta.png 0.35 -1 ",boxblur=14:2,eq=brightness=-0.25:saturation=0.8"
 
 python3 - "$XF" > xf.txt <<'PY'
